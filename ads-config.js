@@ -24,10 +24,35 @@
 window.ADS_CONFIG = {
   enabled: true,   // false = desactiva los anuncios
 
-  // Pega aquí el código de zona de HilltopAds (con <script> incluido)
+  // Códigos de zona de HilltopAds (ya configurados)
   zones: {
-    home:  "",   // código de la zona de la PORTADA
-    story: ""    // código de la zona al TERMINAR un cuento
+    // ZONA 1 - PORTADA
+    home: `<script>
+(function(ykcc){
+var d = document,
+    s = d.createElement('script'),
+    l = d.currentScript || d.scripts[d.scripts.length - 1];
+s.settings = ykcc || {};
+s.src = "\/\/juvenilechoice.com\/b\/XwVosGd.Grl\/0\/Y\/Wncu\/ceRmw9RujZNUilVk\/PiTCc\/1yMtDbcs1\/N\/TbMit_NVzxUtwlNJzdUE1NNPwe";
+s.async = true;
+s.referrerPolicy = 'no-referrer-when-downgrade';
+l.parentNode.insertBefore(s, l);
+})({})
+</script>`,
+
+    // ZONA 2 - CUENTO
+    story: `<script>
+(function(gkvd){
+var d = document,
+    s = d.createElement('script'),
+    l = d.currentScript || d.scripts[d.scripts.length - 1];
+s.settings = gkvd || {};
+s.src = "\/\/juvenilechoice.com\/bTXNVcs\/d.GolJ0gYTWhcR\/beVmx9zuqZjUslqkJPHTZcy1\/MbDHcg1\/Nhj_UItkNizHUcwHNwzKUQ2\/OkQE";
+s.async = true;
+s.referrerPolicy = 'no-referrer-when-downgrade';
+l.parentNode.insertBefore(s, l);
+})({})
+</script>`
   },
 
   // Ponlo en true para VER cajas de ejemplo mientras te aprueban el sitio
