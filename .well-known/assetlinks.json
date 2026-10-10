@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.miscuentos.cuentoscortitos",
+      "sha256_cert_fingerprints": [
+        "42:4E:87:71:0B:E9:1B:30:4D:0F:BD:B4:3D:93:EE:9B:27:79:69:41:60:CD:70:DB:2C:0D:A7:7C:5C:EE:87:B0"
+      ]
+    }
+  }
+]
