@@ -1,9 +1,10 @@
 /* Service worker de Cuentos Cortitos - cache offline (40 cuentos) */
-const CACHE = "cuentos-cortitos-v5";
+const CACHE = "cuentos-cortitos-v7";
 const ASSETS = [
   "./",
   "./index.html",
   "./cuentos-data.js",
+  "./cuentos-largos.js",
   "./ads-config.js",
   "./privacidad.html",
   "./manifest.webmanifest",
