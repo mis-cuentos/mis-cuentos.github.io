@@ -65,23 +65,34 @@
     display:block;margin:22px auto 0;background:var(--primary);color:#fff;border-radius:999px;
     padding:14px 26px;font-size:1.05rem;box-shadow:var(--shadow);
   }
-  .story{display:flex;flex-direction:column;align-items:center;gap:14px}
+  .story{display:flex;flex-direction:column;align-items:center;gap:16px;padding-bottom:96px}
   .stage{
     width:100%;background:#fff;border-radius:28px;overflow:hidden;box-shadow:var(--shadow);line-height:0;
   }
   .stage svg{width:100%;height:auto;display:block;max-height:46vh}
+  .full-text{
+    width:100%;background:var(--card);border-radius:26px;box-shadow:var(--shadow);
+    padding:22px 20px 4px;
+  }
   .page-text{
-    font-size:clamp(1.35rem,5.4vw,2.1rem);font-weight:800;text-align:center;
-    margin:2px 6px;line-height:1.35;min-height:3.2em;display:flex;align-items:center;justify-content:center;
+    font-size:clamp(1.12rem,4.3vw,1.55rem);font-weight:600;text-align:left;
+    margin:0 0 1.05em;line-height:1.68;
   }
-  .dots{display:flex;gap:9px;margin:2px 0 4px}
-  .dot{width:11px;height:11px;border-radius:999px;background:#f0c9d6}
-  .dot.on{background:var(--primary);transform:scale(1.25)}
-  .nav{display:flex;align-items:center;justify-content:center;gap:14px;width:100%;margin-top:4px}
+  .page-text:first-child::first-letter{
+    font-size:2.6em;font-weight:800;color:var(--primary-d);float:left;
+    line-height:.86;padding:4px 10px 0 0;
+  }
+  .read-bar{
+    position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;
+    padding:12px 14px calc(12px + env(safe-area-inset-bottom));pointer-events:none;
+    background:linear-gradient(to top,rgba(255,247,251,.99) 55%,rgba(255,247,251,0));
+  }
   .read-btn{
-    flex:1;max-width:300px;background:var(--blue);color:#fff;border-radius:999px;padding:15px 20px;
-    font-size:1.08rem;box-shadow:var(--shadow);
+    pointer-events:auto;width:100%;max-width:340px;background:var(--blue);color:#fff;
+    border-radius:999px;padding:15px 20px;font-size:1.08rem;
+    box-shadow:0 8px 22px rgba(76,201,240,.45);
   }
+  .read-btn.playing{background:var(--primary-d);box-shadow:0 8px 22px rgba(232,85,122,.45)}
   footer{text-align:center;color:var(--muted);font-size:.75rem;margin-top:34px}
   .thumb-img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
   .stage-img{width:100%;height:auto;max-height:48vh;object-fit:contain;display:block;background:#fff}
@@ -100,6 +111,7 @@
 <div class="wrap" id="app"></div>
 <script src="./ads-config.js"></script>
 <script src="./cuentos-data.js"></script>
+<script src="./cuentos-largos.js"></script>
 <script src="./cuentos-images.js"></script>
 <script>
 /* ============================================================
@@ -393,8 +405,13 @@ const SVG_STORIES = [
   }
 ];
 
-/* Pack de 30 cuentos cargado desde cuentos-data.js */
-const STORIES = SVG_STORIES.concat(window.PACK_CUENTOS || []);
+/* Pack de 30 cuentos cargado desde cuentos-data.js.
+   Si un cuento tiene una version larga en cuentos-largos.js, se usa esa. */
+const PACK = (window.PACK_CUENTOS || []).map((s) => {
+  const larga = (window.PACK_LARGOS || []).filter((x) => x.id === s.id)[0];
+  return larga ? Object.assign({}, s, larga) : s;
+});
+const STORIES = SVG_STORIES.concat(PACK);
 
 /* ---------------- Idioma ---------------- */
 const I18N = {
@@ -499,29 +516,23 @@ function pageText(p) {
 function storyHTML() {
   const s = STORIES[route.story];
   const pages = storyPages(s);
-  const total = pages.length;
-  const p = pages[route.page];
-  const dots = pages.map((_, i) => `<span class="dot${i === route.page ? " on" : ""}"></span>`).join("");
   const media = s.img ? `<img class="stage-img" src="${imgSrc(s.img)}" alt="">` : s.svg;
-  const body = p.moral
+  const body = pages.map((p) => p.moral
     ? `<div class="moral"><div class="label">${lang === "es" ? "Moraleja" : "Moral"}</div><div class="txt">${p[lang]}</div></div>`
-    : `<p class="page-text">${p[lang]}</p>`;
+    : `<p class="page-text">${p[lang]}</p>`).join("");
   return `<header class="top">
     <button class="round-btn" data-action="back" aria-label="${I18N[lang].back}">←</button>
-    <div class="brand"><div><h1>${s.title[lang]}</h1><p class="sub">${route.page + 1} / ${total}</p></div></div>
+    <div class="brand"><div><h1>${s.title[lang]}</h1><p class="sub">${lang === "es" ? "Cuento completo" : "Full story"}</p></div></div>
     <button class="lang" data-action="lang" aria-label="Cambiar idioma">${lang === "es" ? "EN" : "ES"}</button>
   </header>
   <main class="story">
     <div class="stage">${media}</div>
-    ${body}
-    <div class="dots">${dots}</div>
-    <div class="nav">
-      <button class="round-btn" data-action="prev" ${route.page === 0 ? "disabled" : ""} aria-label="${I18N[lang].prev}">←</button>
-      <button class="read-btn" data-action="read">🔊 ${I18N[lang].read}</button>
-      <button class="round-btn" data-action="next" ${route.page === total - 1 ? "disabled" : ""} aria-label="${I18N[lang].next}">→</button>
-    </div>
-    ${route.page === total - 1 ? '<div class="ad-box" data-ad="story"></div>' : ""}
-  </main>`;
+    <article class="full-text">${body}</article>
+    <div class="ad-box" data-ad="story"></div>
+  </main>
+  <div class="read-bar">
+    <button class="read-btn${speaking ? " playing" : ""}" data-action="read">${speaking ? "⏹ " + I18N[lang].stop : "🔊 " + I18N[lang].read}</button>
+  </div>`;
 }
 
 function render() {
@@ -533,31 +544,76 @@ function render() {
 
 /* ---------------- Lectura en voz alta ---------------- */
 function updateReadBtn() {
-  const b = document.querySelector('[data-action="read"]');
-  if (b) b.textContent = (speaking ? "⏹ " + I18N[lang].stop : "🔊 " + I18N[lang].read);
+  document.querySelectorAll('[data-action="read"]').forEach((b) => {
+    b.textContent = speaking ? "⏹ " + I18N[lang].stop : "🔊 " + I18N[lang].read;
+    b.classList.toggle("playing", speaking);
+  });
+}
+
+/* Chrome corta la voz si se le manda un texto muy largo (bug de los ~15 s).
+   Por eso partimos el cuento en frases y las leemos en cadena, una tras otra. */
+function speechChunks(text) {
+  const parts = String(text).replace(/\s+/g, " ").match(/[^.!?…;:]+[.!?…;:]*/g) || [text];
+  const out = [];
+  for (const raw of parts) {
+    const p = raw.trim();
+    if (!p) continue;
+    if (out.length && (out[out.length - 1].length + p.length) < 150) out[out.length - 1] += " " + p;
+    else out.push(p);
+  }
+  return out;
+}
+
+let speakQueue = [], speakIdx = 0, keepAlive = null;
+
+function speakNext() {
+  if (!speaking) return;
+  if (speakIdx >= speakQueue.length) { stopSpeak(); return; }
+  const u = new SpeechSynthesisUtterance(speakQueue[speakIdx++]);
+  u.lang = lang === "es" ? "es-ES" : "en-US";
+  u.rate = 0.9;
+  u.pitch = 1.05;
+  u.onend = () => speakNext();
+  u.onerror = () => speakNext();
+  window.speechSynthesis.speak(u);
+}
+
+function speakText(text) {
+  stopSpeak();
+  speakQueue = speechChunks(text);
+  if (!speakQueue.length) return;
+  speakIdx = 0;
+  speaking = true;
+  updateReadBtn();
+  keepAlive = setInterval(() => {
+    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+      window.speechSynthesis.pause();
+      window.speechSynthesis.resume();
+    }
+  }, 8000);
+  speakNext();
 }
 
 function stopSpeak() {
-  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
   speaking = false;
+  if (keepAlive) { clearInterval(keepAlive); keepAlive = null; }
+  speakQueue = [];
+  speakIdx = 0;
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
   updateReadBtn();
 }
 
 function toggleRead() {
   if (!("speechSynthesis" in window)) { alert(I18N[lang].noVoice); return; }
-  if (window.speechSynthesis.speaking) { stopSpeak(); return; }
-  const text = route.view === "story"
-    ? pageText(storyPages(STORIES[route.story])[route.page])
-    : STORIES.map((s) => s.title[lang]).join(". ");
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = lang === "es" ? "es-ES" : "en-US";
-  u.rate = 0.88;
-  u.pitch = 1.05;
-  u.onend = () => { speaking = false; updateReadBtn(); };
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(u);
-  speaking = true;
-  updateReadBtn();
+  if (speaking) { stopSpeak(); return; }
+  let text;
+  if (route.view === "story") {
+    const s = STORIES[route.story];
+    text = [s.title[lang]].concat(storyPages(s).map((p) => pageText(p))).join(". ");
+  } else {
+    text = STORIES.map((s) => s.title[lang]).join(". ");
+  }
+  speakText(text);
 }
 
 /* ---------------- Eventos ---------------- */
@@ -567,17 +623,9 @@ document.addEventListener("click", (ev) => {
   const a = el.dataset.action;
   if (a === "open") { stopSpeak(); route = { view: "story", story: +el.dataset.id, page: 0 }; render(); }
   else if (a === "back") { stopSpeak(); route = { view: "home", story: 0, page: 0 }; render(); }
-  else if (a === "prev") { if (route.page > 0) { route.page--; stopSpeak(); render(); } }
-  else if (a === "next") { if (route.page < storyPages(STORIES[route.story]).length - 1) { route.page++; stopSpeak(); render(); } }
   else if (a === "lang") { lang = lang === "es" ? "en" : "es"; localStorage.setItem("cuentos-lang", lang); stopSpeak(); render(); }
   else if (a === "read") { toggleRead(); }
   else if (a === "install") { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; } }
-});
-
-document.addEventListener("keydown", (ev) => {
-  if (route.view !== "story") return;
-  if (ev.key === "ArrowRight") document.querySelector('[data-action="next"]:not([disabled])')?.click();
-  if (ev.key === "ArrowLeft") document.querySelector('[data-action="prev"]:not([disabled])')?.click();
 });
 
 window.addEventListener("beforeinstallprompt", (ev) => {
